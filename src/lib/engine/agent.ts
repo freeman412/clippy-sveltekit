@@ -191,6 +191,7 @@ export class Agent {
 
 				this.x = startX + (targetX - startX) * ease;
 				this.y = startY + (targetY - startY) * ease;
+				this.balloon.reposition(this.balloonOptions());
 				this.emitState();
 
 				if (t < 1) {
