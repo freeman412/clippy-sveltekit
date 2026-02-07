@@ -42,13 +42,22 @@ export class Agent {
 	private onStateChange: AgentStateCallback;
 	private sounds: Map<string, HTMLAudioElement> = new Map();
 
-	constructor(config: AgentConfig, onStateChange: AgentStateCallback) {
+	constructor(
+		config: AgentConfig,
+		onStateChange: AgentStateCallback,
+		initialPosition?: { x: number; y: number }
+	) {
 		this.config = config;
 		this.onStateChange = onStateChange;
 
-		// Position at bottom-right by default
-		this.x = typeof window !== 'undefined' ? window.innerWidth - config.framesize[0] - 40 : 200;
-		this.y = typeof window !== 'undefined' ? window.innerHeight - config.framesize[1] - 40 : 200;
+		if (initialPosition) {
+			this.x = initialPosition.x;
+			this.y = initialPosition.y;
+		} else {
+			// Position at bottom-right by default
+			this.x = typeof window !== 'undefined' ? window.innerWidth - config.framesize[0] - 40 : 200;
+			this.y = typeof window !== 'undefined' ? window.innerHeight - config.framesize[1] - 40 : 200;
+		}
 
 		this.animator = new Animator(
 			config,
