@@ -20,6 +20,8 @@ export interface AgentState {
 	height: number;
 	/** Currently playing animation name */
 	currentAnimation: string | null;
+	/** Whether the interactive panel is open */
+	panelOpen: boolean;
 }
 
 export type AgentStateCallback = (state: AgentState) => void;
@@ -36,6 +38,7 @@ export class Agent {
 	private dragging = false;
 	private currentAnimation: string | null = null;
 	private isIdling = false;
+	private panelOpen = false;
 
 	private dragOffsetX = 0;
 	private dragOffsetY = 0;
@@ -169,6 +172,30 @@ export class Agent {
 		this.balloon.close();
 	}
 
+	/** Open the interactive panel (replaces balloon) */
+	openPanel() {
+		if (this.panelOpen) return;
+		this.panelOpen = true;
+		this.closeBalloon();
+		this.emitState();
+	}
+
+	/** Close the interactive panel */
+	closePanel() {
+		if (!this.panelOpen) return;
+		this.panelOpen = false;
+		this.emitState();
+	}
+
+	/** Toggle the interactive panel */
+	togglePanel() {
+		if (this.panelOpen) {
+			this.closePanel();
+		} else {
+			this.openPanel();
+		}
+	}
+
 	/** Animate movement to coordinates */
 	moveTo(targetX: number, targetY: number, duration = 1000) {
 		this.queue.enqueue((done) => {
@@ -230,6 +257,7 @@ export class Agent {
 		this.queue.clear();
 		this.animator.stop();
 		this.balloon.close();
+		this.panelOpen = false;
 		this.stopIdle();
 	}
 
@@ -352,7 +380,8 @@ export class Agent {
 			balloon: this.balloon.getState(),
 			width: this.config.framesize[0],
 			height: this.config.framesize[1],
-			currentAnimation: this.currentAnimation
+			currentAnimation: this.currentAnimation,
+			panelOpen: this.panelOpen
 		});
 	}
 
