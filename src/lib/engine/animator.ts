@@ -66,6 +66,7 @@ export class Animator {
 		this.currentAnimationName = null;
 		this.exiting = false;
 		this.paused = false;
+		this.onComplete = null;
 	}
 
 	exitAnimation() {
@@ -123,6 +124,10 @@ export class Animator {
 
 		if (this.exiting && frame.exitBranch !== undefined) {
 			nextIndex = frame.exitBranch;
+		} else if (this.exiting) {
+			// No exit branch available — force finish to prevent infinite loops
+			this.finished();
+			return;
 		} else if (frame.branching) {
 			const rnd = Math.random() * 100;
 			let total = 0;

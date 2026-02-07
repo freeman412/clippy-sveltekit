@@ -92,13 +92,12 @@
 	<!-- Balloon -->
 	<ClippyBalloon state={agentState.balloon} />
 
-	<!-- Agent sprite -->
+	<!-- Agent sprite: uses transform for GPU-composited positioning -->
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		class="clippy-agent {className}"
 		style="
-			left: {agentState.x}px;
-			top: {agentState.y}px;
+			transform: translate({agentState.x}px, {agentState.y}px);
 			width: {agentState.width}px;
 			height: {agentState.height}px;
 			cursor: {agentState.dragging ? 'grabbing' : 'grab'};
@@ -128,10 +127,13 @@
 <style>
 	.clippy-agent {
 		position: fixed;
+		left: 0;
+		top: 0;
 		z-index: 10000;
 		user-select: none;
 		-webkit-user-select: none;
 		touch-action: none;
+		will-change: transform;
 	}
 
 	.clippy-overlay {
