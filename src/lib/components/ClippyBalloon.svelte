@@ -45,6 +45,13 @@
 		border-right: 1px solid #000;
 	}
 
+	/* Top positions: transform shifts balloon up by its own height
+	   so the tip at the bottom points at the agent's top edge */
+	.clippy-top-right,
+	.clippy-top-left {
+		transform: translateY(-100%);
+	}
+
 	.clippy-top-right .clippy-tip,
 	.clippy-top-left .clippy-tip {
 		bottom: -6px;

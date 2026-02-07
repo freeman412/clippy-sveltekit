@@ -19,10 +19,10 @@ export interface BalloonOptions {
 }
 
 const BALLOON_WIDTH = 200;
-const BALLOON_HEIGHT_EST = 80;
-const BALLOON_MARGIN = 15;
-const WORD_DELAY = 200;
-const CLOSE_DELAY = 2000;
+const BALLOON_HEIGHT_EST = 60;
+const WORD_DELAY = 120;
+const MIN_CLOSE_DELAY = 2000;
+const MS_PER_WORD = 300;
 
 export class Balloon {
 	private state: BalloonState = {
@@ -99,7 +99,9 @@ export class Balloon {
 		if (this.wordIndex >= this.words.length) {
 			this.onChange(this.state);
 			if (!this.state.hold) {
-				this.closeTimer = setTimeout(() => this.close(), CLOSE_DELAY);
+				// Scale reading time with text length
+				const readingTime = Math.max(MIN_CLOSE_DELAY, this.words.length * MS_PER_WORD);
+				this.closeTimer = setTimeout(() => this.close(), readingTime);
 			}
 			return;
 		}
@@ -119,11 +121,13 @@ export class Balloon {
 
 		for (const side of sides) {
 			const pos = this.position(side, opts);
+			const isTop = side.startsWith('top');
 			if (
 				pos.x >= 0 &&
-				pos.y >= 0 &&
 				pos.x + BALLOON_WIDTH <= vw &&
-				pos.y + BALLOON_HEIGHT_EST <= vh
+				(isTop
+					? pos.y - BALLOON_HEIGHT_EST >= 0
+					: pos.y + BALLOON_HEIGHT_EST <= vh)
 			) {
 				return side;
 			}
@@ -132,6 +136,12 @@ export class Balloon {
 		return 'top-right';
 	}
 
+	/**
+	 * Position the balloon anchor point.
+	 * For top-* sides, CSS transform: translateY(-100%) shifts the balloon upward
+	 * so the tip (at bottom of balloon) points near the agent's top edge.
+	 * For bottom-* sides, the balloon grows downward from the anchor.
+	 */
 	private position(side: BalloonSide, opts: BalloonOptions): { x: number; y: number } {
 		const { agentX, agentY, agentWidth, agentHeight } = opts;
 		const centerX = agentX + agentWidth / 2;
@@ -140,22 +150,22 @@ export class Balloon {
 			case 'top-right':
 				return {
 					x: centerX - 20,
-					y: agentY - BALLOON_HEIGHT_EST - 5
+					y: agentY - 8
 				};
 			case 'top-left':
 				return {
 					x: centerX - BALLOON_WIDTH + 20,
-					y: agentY - BALLOON_HEIGHT_EST - 5
+					y: agentY - 8
 				};
 			case 'bottom-right':
 				return {
 					x: centerX - 20,
-					y: agentY + agentHeight + 8
+					y: agentY + agentHeight + 10
 				};
 			case 'bottom-left':
 				return {
 					x: centerX - BALLOON_WIDTH + 20,
-					y: agentY + agentHeight + 8
+					y: agentY + agentHeight + 10
 				};
 		}
 	}

@@ -35,6 +35,7 @@ export class Agent {
 	private visible = false;
 	private dragging = false;
 	private currentAnimation: string | null = null;
+	private isIdling = false;
 
 	private dragOffsetX = 0;
 	private dragOffsetY = 0;
@@ -70,7 +71,8 @@ export class Agent {
 		});
 
 		this.queue = new Queue();
-		this.queue.onEmpty(() => this.idleAnimation());
+		this.queue.onEmpty(() => this.startIdle());
+		this.queue.onStart(() => this.stopIdle());
 	}
 
 	// ─── Public API ───
@@ -124,17 +126,18 @@ export class Agent {
 	play(animationName: string, timeout?: number, callback?: () => void) {
 		this.queue.enqueue((done) => {
 			let completed = false;
+			let timeoutId: ReturnType<typeof setTimeout> | null = null;
+
 			const finish = () => {
 				if (completed) return;
 				completed = true;
+				if (timeoutId) clearTimeout(timeoutId);
 				callback?.();
 				done();
 			};
 
 			if (timeout) {
-				setTimeout(() => {
-					this.animator.exitAnimation();
-				}, timeout);
+				timeoutId = setTimeout(finish, timeout);
 			}
 
 			if (!this.animator.play(animationName, finish)) {
@@ -143,24 +146,21 @@ export class Agent {
 		});
 	}
 
-	/** Play a random non-idle animation */
+	/** Play a random non-idle animation (interrupts current actions) */
 	animate() {
 		const anims = this.animator.animations().filter(
 			(a) => !a.startsWith('Idle') && a !== 'Show' && a !== 'Hide'
 		);
 		if (anims.length === 0) return;
 		const name = anims[Math.floor(Math.random() * anims.length)];
+		this.stop();
 		this.play(name);
 	}
 
-	/** Show speech balloon */
+	/** Show speech balloon (blocks queue until balloon closes) */
 	speak(text: string, hold = false) {
 		this.queue.enqueue((done) => {
-			this.balloon.speak(text, hold, this.balloonOptions(), hold ? done : undefined);
-			if (!hold) {
-				// Non-hold: complete immediately, balloon auto-closes
-				done();
-			}
+			this.balloon.speak(text, hold, this.balloonOptions(), done);
 		});
 	}
 
@@ -175,6 +175,7 @@ export class Agent {
 			const startX = this.x;
 			const startY = this.y;
 			const startTime = performance.now();
+			let lastEmitTime = 0;
 
 			// Pick a movement direction animation
 			const dir = this.getDirection(targetX, targetY);
@@ -191,8 +192,13 @@ export class Agent {
 
 				this.x = startX + (targetX - startX) * ease;
 				this.y = startY + (targetY - startY) * ease;
-				this.balloon.reposition(this.balloonOptions());
-				this.emitState();
+
+				// Throttle to ~30fps, always emit final frame
+				if (now - lastEmitTime >= 33 || t >= 1) {
+					this.balloon.reposition(this.balloonOptions());
+					this.emitState();
+					lastEmitTime = now;
+				}
 
 				if (t < 1) {
 					requestAnimationFrame(animate);
@@ -224,6 +230,7 @@ export class Agent {
 		this.queue.clear();
 		this.animator.stop();
 		this.balloon.close();
+		this.stopIdle();
 	}
 
 	/** Stop only the current action */
@@ -365,13 +372,30 @@ export class Agent {
 		}
 	}
 
-	private idleAnimation() {
+	/**
+	 * Idle plays directly on the animator — NOT through the queue.
+	 * This prevents looping idle animations from blocking the queue forever.
+	 * When new queue items arrive, onStart stops the idle via stopIdle().
+	 */
+	private startIdle() {
+		if (this.dragging) return;
 		const idles = this.animator.animations().filter((a) => a.startsWith('Idle'));
 		if (idles.length === 0) return;
+		this.isIdling = true;
 		const name = idles[Math.floor(Math.random() * idles.length)];
-		this.queue.enqueue((done) => {
-			this.animator.play(name, done);
+		this.animator.play(name, () => {
+			// When idle finishes naturally, chain to another
+			if (this.isIdling) {
+				this.startIdle();
+			}
 		});
+	}
+
+	private stopIdle() {
+		if (this.isIdling) {
+			this.isIdling = false;
+			this.animator.stop();
+		}
 	}
 
 	private getDirection(x: number, y: number): string {
