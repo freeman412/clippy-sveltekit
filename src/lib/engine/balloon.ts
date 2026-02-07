@@ -134,27 +134,28 @@ export class Balloon {
 
 	private position(side: BalloonSide, opts: BalloonOptions): { x: number; y: number } {
 		const { agentX, agentY, agentWidth, agentHeight } = opts;
+		const centerX = agentX + agentWidth / 2;
 
 		switch (side) {
 			case 'top-right':
 				return {
-					x: agentX + agentWidth - BALLOON_MARGIN,
-					y: agentY - BALLOON_HEIGHT_EST - BALLOON_MARGIN
+					x: centerX - 20,
+					y: agentY - BALLOON_HEIGHT_EST - 5
 				};
 			case 'top-left':
 				return {
-					x: agentX - BALLOON_WIDTH + BALLOON_MARGIN,
-					y: agentY - BALLOON_HEIGHT_EST - BALLOON_MARGIN
+					x: centerX - BALLOON_WIDTH + 20,
+					y: agentY - BALLOON_HEIGHT_EST - 5
 				};
 			case 'bottom-right':
 				return {
-					x: agentX + agentWidth - BALLOON_MARGIN,
-					y: agentY + agentHeight + BALLOON_MARGIN
+					x: centerX - 20,
+					y: agentY + agentHeight + 8
 				};
 			case 'bottom-left':
 				return {
-					x: agentX - BALLOON_WIDTH + BALLOON_MARGIN,
-					y: agentY + agentHeight + BALLOON_MARGIN
+					x: centerX - BALLOON_WIDTH + 20,
+					y: agentY + agentHeight + 8
 				};
 		}
 	}
