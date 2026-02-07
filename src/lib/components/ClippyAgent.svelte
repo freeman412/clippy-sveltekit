@@ -8,10 +8,12 @@
 	let {
 		agentName = 'Clippy' as AgentName,
 		onReady,
+		initialPosition,
 		class: className = ''
 	}: {
 		agentName?: AgentName;
 		onReady?: (agent: Agent) => void;
+		initialPosition?: { x: number; y: number };
 		class?: string;
 	} = $props();
 
@@ -44,9 +46,13 @@
 			const assets = await loadAgent(agentName);
 			spriteUrl = assets.spriteUrl;
 
-			agent = new Agent(assets.config, (newState) => {
-				agentState = newState;
-			});
+			agent = new Agent(
+				assets.config,
+				(newState) => {
+					agentState = newState;
+				},
+				initialPosition
+			);
 
 			loading = false;
 			onReady?.(agent);
