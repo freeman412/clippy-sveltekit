@@ -20,15 +20,15 @@
 		z-index: 10001;
 		max-width: 200px;
 		min-width: 120px;
-		background: #ffc;
-		color: #000;
-		border: 1px solid #000;
-		border-radius: 5px;
+		background: var(--clippy-balloon-bg, #ffc);
+		color: var(--clippy-balloon-color, #000);
+		border: 1px solid var(--clippy-balloon-border, #000);
+		border-radius: var(--clippy-balloon-radius, 5px);
 		padding: 8px;
-		font-family: 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif;
+		font-family: var(--clippy-balloon-font, 'Microsoft Sans Serif', 'Segoe UI', Tahoma, sans-serif);
 		font-size: 10pt;
 		line-height: 1.4;
-		box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+		box-shadow: var(--clippy-balloon-shadow, 2px 2px 4px rgba(0, 0, 0, 0.3));
 		pointer-events: auto;
 	}
 
@@ -40,9 +40,9 @@
 		position: absolute;
 		width: 10px;
 		height: 10px;
-		background: #ffc;
-		border-bottom: 1px solid #000;
-		border-right: 1px solid #000;
+		background: var(--clippy-balloon-bg, #ffc);
+		border-bottom: 1px solid var(--clippy-balloon-border, #000);
+		border-right: 1px solid var(--clippy-balloon-border, #000);
 	}
 
 	/* Top positions: transform shifts balloon up by its own height
