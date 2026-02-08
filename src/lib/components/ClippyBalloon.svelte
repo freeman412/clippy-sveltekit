@@ -54,7 +54,7 @@
 
 	.clippy-top-right .clippy-tip,
 	.clippy-top-left .clippy-tip {
-		bottom: -6px;
+		bottom: -4px;
 		transform: rotate(45deg);
 	}
 

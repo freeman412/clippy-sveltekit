@@ -146,26 +146,28 @@ export class Balloon {
 		const { agentX, agentY, agentWidth, agentHeight } = opts;
 		const centerX = agentX + agentWidth / 2;
 
+		const tipGap = 45; // space between agent edge and balloon tip (accounts for rotated tip diamond)
+
 		switch (side) {
 			case 'top-right':
 				return {
 					x: centerX - 20,
-					y: agentY - 8
+					y: agentY - tipGap
 				};
 			case 'top-left':
 				return {
 					x: centerX - BALLOON_WIDTH + 20,
-					y: agentY - 8
+					y: agentY - tipGap
 				};
 			case 'bottom-right':
 				return {
 					x: centerX - 20,
-					y: agentY + agentHeight + 10
+					y: agentY + agentHeight + tipGap
 				};
 			case 'bottom-left':
 				return {
 					x: centerX - BALLOON_WIDTH + 20,
-					y: agentY + agentHeight + 10
+					y: agentY + agentHeight + tipGap
 				};
 		}
 	}
