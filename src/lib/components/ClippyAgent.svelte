@@ -48,8 +48,7 @@
 
 	// Panel positioning: anchored above (or below) Clippy
 	const PANEL_WIDTH = 340;
-	const PANEL_HEIGHT_EST = 340;
-	const GAP = 8;
+	const GAP = 12;
 
 	let panelPosition = $derived.by(() => {
 		const vw = typeof window !== 'undefined' ? window.innerWidth : 1024;
@@ -57,19 +56,21 @@
 
 		// Center panel horizontally on agent
 		let x = agentState.x + agentState.width / 2 - PANEL_WIDTH / 2;
-		// Position above agent by default
-		let y = agentState.y - PANEL_HEIGHT_EST - GAP;
 
 		// Clamp horizontal to viewport
 		if (x + PANEL_WIDTH > vw - 8) x = vw - PANEL_WIDTH - 8;
 		if (x < 8) x = 8;
 
-		// If not enough room above, position below
-		if (y < 8) {
-			y = agentState.y + agentState.height + GAP;
-		}
+		// Place panel above Clippy when there's room, below otherwise
+		const above = agentState.y > 250;
 
-		return { x, y };
+		if (above) {
+			// Use CSS `bottom` to anchor panel's bottom edge above Clippy
+			return { x, above, bottom: vh - agentState.y + GAP, top: 0 };
+		} else {
+			// Use CSS `top` to place panel below Clippy
+			return { x, above, top: agentState.y + agentState.height + GAP, bottom: 0 };
+		}
 	});
 
 	onMount(async () => {
@@ -168,7 +169,7 @@
 	{#if agentState.panelOpen && panel && agent}
 		<div
 			class="clippy-panel-container"
-			style="left: {panelPosition.x}px; top: {panelPosition.y}px;"
+			style="left: {panelPosition.x}px; {panelPosition.above ? `bottom: ${panelPosition.bottom}px;` : `top: ${panelPosition.top}px;`}"
 		>
 			{@render panel({ agent, close: handlePanelClose })}
 		</div>
